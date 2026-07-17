@@ -1,0 +1,12 @@
+import { UserPlus } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { useAuth } from '../contexts/AuthContext';
+
+export function RegisterPage(){
+ const {register,loginWithGoogle}=useAuth(); const navigate=useNavigate();
+ const [name,setName]=useState('');const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [confirm,setConfirm]=useState('');const [error,setError]=useState('');const [loading,setLoading]=useState(false);
+ const submit=async(e:React.FormEvent)=>{e.preventDefault();if(password.length<8){setError('Password minimal 8 karakter.');return;}if(password!==confirm){setError('Konfirmasi password tidak sama.');return;}setLoading(true);setError('');try{await register(name,email,password);navigate('/account');}catch(err){setError(err instanceof Error?err.message:'Registrasi gagal.');}finally{setLoading(false);}};
+ return <div className="auth-page"><form className="card auth-card form-stack" onSubmit={submit}><div className="auth-brand"><img src="/assets/logo-main.png" alt=""/><h1>Buat Akun NAFI</h1><p className="muted">Belanja produk digital premium dengan aman.</p></div>{error&&<div className="alert">{error}</div>}<div className="field"><label>Nama lengkap</label><input className="input" value={name} onChange={(e)=>setName(e.target.value)} required/></div><div className="field"><label>Email</label><input className="input" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required/></div><div className="form-row"><div className="field"><label>Password</label><input className="input" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} required/></div><div className="field"><label>Konfirmasi</label><input className="input" type="password" value={confirm} onChange={(e)=>setConfirm(e.target.value)} required/></div></div><Button type="submit" disabled={loading}><UserPlus size={18}/>{loading?'Membuat akun...':'Daftar'}</Button><Button type="button" variant="secondary" onClick={async()=>{setLoading(true);setError('');try{await loginWithGoogle();navigate('/account');}catch(err){setError(err instanceof Error?err.message:'Login Google gagal.');}finally{setLoading(false);}}}>Daftar dengan Google</Button><p className="muted" style={{textAlign:'center'}}>Sudah punya akun? <Link className="gold" to="/login">Masuk</Link></p></form></div>;
+}

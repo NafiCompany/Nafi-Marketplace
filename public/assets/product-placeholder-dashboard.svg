@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0c0d10"/><stop offset="1" stop-color="#24201a"/></linearGradient></defs>
+  <rect width="1200" height="750" fill="url(#g)"/>
+  <g opacity=".28" stroke="#d6a84f" fill="none">
+    <path d="M0 130H1200M0 620H1200M120 0V750M1080 0V750"/>
+    <circle cx="1040" cy="120" r="220"/><circle cx="160" cy="640" r="180"/>
+  </g>
+  <text x="600" y="345" text-anchor="middle" fill="#f0cd83" font-family="Arial" font-weight="700" font-size="72">NAFI MARKETPLACE</text>
+  <text x="600" y="430" text-anchor="middle" fill="#b9aa90" font-family="Arial" font-size="34">PREMIUM DIGITAL PRODUCT</text>
+</svg>

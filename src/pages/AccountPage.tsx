@@ -1,0 +1,20 @@
+import { Download, ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet } from 'react-router-dom';
+import { EmptyState } from '../components/ui/EmptyState';
+import { Spinner } from '../components/ui/Spinner';
+import { useAuth } from '../contexts/AuthContext';
+import { api } from '../services/api';
+import type { Order } from '../types';
+
+const rupiah = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});
+
+export function AccountLayout(){const{profile}=useAuth();return <section className="section"><div className="container account-layout"><aside className="card card-pad account-nav"><h3>{profile?.full_name||'Akun Saya'}</h3><p className="muted">{profile?.email}</p><NavLink end to="/account">Ringkasan</NavLink><NavLink to="/account/orders">Pesanan</NavLink><NavLink to="/account/downloads">Produk Saya</NavLink></aside><div><Outlet/></div></div></section>}
+
+export function AccountOverview(){const{profile}=useAuth();return <div className="grid grid-2"><div className="card card-pad"><div className="eyebrow">Profil</div><h2>{profile?.full_name||'Pengguna NAFI'}</h2><p className="muted">{profile?.email}</p></div><div className="card card-pad"><div className="eyebrow">Akses</div><h2>Produk Digital</h2><p className="muted">Produk berstatus dibayar dapat diakses dari menu Produk Saya.</p><Link className="btn btn-primary" to="/account/downloads">Lihat Produk</Link></div></div>}
+
+export function OrdersPage(){const[orders,setOrders]=useState<Order[]|null>(null);useEffect(()=>{void api.get<Order[]>('/api/orders').then(setOrders).catch(()=>setOrders([]));},[]);if(!orders)return <Spinner/>;if(!orders.length)return <EmptyState>Belum ada pesanan.</EmptyState>;return <div className="card card-pad table-wrap"><table><thead><tr><th>No. Pesanan</th><th>Tanggal</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>{orders.map(order=><tr key={order.id}><td>{order.order_number}</td><td>{new Date(order.created_at).toLocaleDateString('id-ID')}</td><td>{rupiah.format(order.total_amount)}</td><td><span className="badge">{order.status.replaceAll('_',' ')}</span></td><td><Link className="btn btn-secondary btn-icon" to={`/account/orders/${order.id}`}><ExternalLink size={17}/></Link></td></tr>)}</tbody></table></div>}
+
+export function OrderDetailPage(){const id=location.pathname.split('/').pop();const[order,setOrder]=useState<Order|null>(null);useEffect(()=>{if(id)void api.get<Order>(`/api/orders/${id}`).then(setOrder);},[id]);if(!order)return <Spinner/>;return <div className="card card-pad"><div className="eyebrow">Detail Pesanan</div><h2>{order.order_number}</h2><p className="muted">{new Date(order.created_at).toLocaleString('id-ID')}</p><div className="grid" style={{marginTop:22}}>{order.order_items?.map(item=><div key={item.id} style={{display:'flex',justifyContent:'space-between',gap:16}}><span>{item.product_name} × {item.quantity}</span><strong>{rupiah.format(item.subtotal)}</strong></div>)}</div><hr style={{borderColor:'rgba(255,255,255,.08)',margin:'22px 0'}}/><div style={{display:'flex',justifyContent:'space-between'}}><strong>Total</strong><strong className="gold">{rupiah.format(order.total_amount)}</strong></div><p>Status: <span className="badge">{order.status}</span></p></div>}
+
+export function DownloadsPage(){const[orders,setOrders]=useState<Order[]|null>(null);useEffect(()=>{void api.get<Order[]>('/api/orders?downloadable=true').then(setOrders).catch(()=>setOrders([]));},[]);if(!orders)return <Spinner/>;const items=orders.flatMap(order=>(order.order_items||[]).map(item=>({...item,orderId:order.id})));if(!items.length)return <EmptyState>Belum ada produk yang dapat diunduh. Produk tersedia setelah pembayaran disetujui.</EmptyState>;return <div className="grid grid-2">{items.map(item=><div className="card card-pad" key={item.id}><h3>{item.product_name}</h3><p className="muted">Akses produk digital Anda dengan tautan aman.</p><a className="btn btn-primary" href={`/api/orders/${item.orderId}/items/${item.id}/download`}><Download size={18}/> Akses Produk</a></div>)}</div>}
